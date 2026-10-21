@@ -5,6 +5,8 @@ instagram content generator via github workflows
 
 Per far funzionare le chiamate alle API di Instagram dal workflow di GitHub Actions, devi prima creare un'app Meta Developer e collegare un account Instagram Business o Creator.
 
+Per una guida dettagliata e completa, consulta la documentazione dedicata: [Configurazione Instagram API Developer](./docs/instagram-api-developer-configuration.md).
+
 ### 1) Registrati a Meta for Developers
 
 1. Apri https://developers.facebook.com/
