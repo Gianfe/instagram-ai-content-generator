@@ -62,7 +62,7 @@
   <path d="M98 477 C106 450, 118 450, 126 477 L126 490 L98 490 Z" fill="#8fa7b4"/>
   <circle cx="112" cy="462" r="10" fill="#8fa7b4"/>
 
-  <text x="170" y="486" class="cell-text">Gian Felice Meloni</text>
+  <text x="170" y="486" class="cell-text">Nome Cognome</text>
 
   <rect x="630" y="440" width="190" height="58" rx="12" class="soft-blue"/>
   <text x="662" y="478" class="role-text" style="font-size: 22px;">Amministratore</text>
@@ -77,15 +77,14 @@
   <circle cx="108" cy="564" r="7" fill="#b4c0cb"/>
   <path d="M94 603 L121 603" stroke="#b4c0cb" stroke-width="4" stroke-linecap="round"/>
 
-  <text x="170" y="590" class="cell-text" style="font-size: 22px;">johnhappy1985</text>
+  <text x="170" y="590" class="cell-text" style="font-size: 22px;">username</text>
 
   <rect x="632" y="558" width="250" height="120" rx="12" fill="#f0f5f8" stroke="#d7e1e8"/>
-  <rect x="648" y="572" width="24" height="24" rx="4" fill="#white" stroke="#586b78"/>
-  <text x="700" y="592" class="role-text" style="font-size: 22px;">Tester di Instagram</text>
-  <text x="700" y="630" class="desc">Gli utenti di Instagram possono</text>
-  <text x="700" y="658" class="desc">gestire gli inviti nella sezione</text>
-  <text x="700" y="686" class="desc">App e siti web del proprio</text>
-  <text x="700" y="714" class="desc">profilo.</text>
+  <rect x="648" y="572" width="24" height="24" rx="4" fill="#ffffff" stroke="#586b78"/>
+  <text x="700" y="592" class="role-text" style="font-size: 22px;">Ruolo dell'app</text>
+  <text x="700" y="630" class="desc">L'utente può gestire l'accesso</text>
+  <text x="700" y="658" class="desc">e i permessi disponibili</text>
+  <text x="700" y="686" class="desc">per questa app.</text>
 
   <rect x="1356" y="585" width="72" height="72" rx="10" fill="#f0f3f5" stroke="#b9c7cf"/>
   <path d="M1376 612 L1376 646 L1408 646 L1408 612 Z" fill="none" stroke="#4d5b67" stroke-width="4"/>
