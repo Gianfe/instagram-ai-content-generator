@@ -11,14 +11,20 @@ Per far funzionare le chiamate alle API di Instagram dal workflow di GitHub Acti
    - scegli il tipo di app adatto (di solito "Business")
    - compila i campi richiesti
 
-## 2) Abilita il prodotto Instagram
+## 2) Abilita il caso d'uso Instagram
 
 Dopo aver creato l'app:
 
-1. Nel menu laterale dell'app, seleziona "Instagram"
-2. Attiva il prodotto "Instagram Graph API" o "Instagram Basic Display" in base alle API che vuoi usare
-3. Assicurati che l'account Instagram sia collegato come Business o Creator account
-4. Collega il profilo Instagram a una Pagina Facebook (se richiesto dal tipo di app)
+1. Apri il pannello della tua app su Meta for Developers
+2. Vai nella sezione "Use cases" (casi d'uso)
+3. Seleziona il caso d'uso più adatto al tuo scenario, ad esempio:
+   - "Gestisci i messaggi e i contenuti su Instagram"
+   - oppure un caso d'uso dedicato alle API di Instagram in base alle funzionalità che vuoi usare
+4. Aggiungi il caso d'uso richiesto se non è già presente, usando "Add use case"
+5. Verifica che l'account Instagram sia collegato come Business o Creator account
+6. Collega il profilo Instagram a una Pagina Facebook, se richiesto dal tipo di app o dal caso d'uso attivato
+
+In pratica, il caso d'uso definisce quale funzionalità dell'API Instagram vuoi abilitare e quali permessi e accessi sono richiesti per usarla correttamente.
 
 ## 3) Ottieni l'ID dell'account Instagram
 
