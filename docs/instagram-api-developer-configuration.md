@@ -28,46 +28,16 @@ In pratica, il caso d'uso definisce quale funzionalità dell'API Instagram vuoi 
 
 ![Associazione dei ruoli dell'app Instagram](./assets/instagram-role-association.svg)
 
-## 3) Ottieni l'ID dell'account Instagram
 
-L'ID dell'account Instagram è necessario per identificare il profilo con cui vuoi interagire.
-
-Puoi recuperarlo in diversi modi:
-
-- tramite Graph API Explorer
-- tramite Meta app settings
-- tramite chiamata API
-
-Esempio con Graph API Explorer:
-
-1. Apri https://developers.facebook.com/tools/explorer/
-2. Seleziona la tua app
-3. Aggiungi il permesso necessario (es. `instagram_basic`, `pages_show_list`, `business_management` o quelli richiesti dal tuo caso d'uso)
-4. Esegui una richiesta come:
-
-```bash
-me?fields=id,username,account_type
-```
-
-Oppure, se vuoi ottenere l'ID dell'account Instagram collegato:
-
-```bash
-{ig-user-id}?fields=id,username
-```
-
-L'ID ottenuto è il valore da usare come `INSTAGRAM_USER_ID`.
-
-## 4) Genera il token di accesso
+## 3) Genera il token di accesso
 
 Per usare le API di Instagram, serve un access token valido.
 
 Metodo consigliato:
 
-1. Apri il Graph API Explorer di Meta
-2. Seleziona la tua app
-3. Scegli "Add permission" e abilita i permessi necessari
-4. Fai clic su "Generate Access Token"
-5. Copia il token generato
+1. Apri https://developers.facebook.com/
+2. Dal menu a sinistra selezionare Casi d'uso -> Configurazione dell'app con Instagram login -> genera token di accesso
+4. Copia il token generato
 
 Esempio di verifica:
 
@@ -81,6 +51,17 @@ Nota importante:
 - I token di accesso vanno trattati come segreti.
 - Non pubblicarli nel codice sorgente o nelle logs.
 - Usali solo tramite GitHub Secrets.
+
+## 4) Ottieni l'ID dell'account Instagram
+
+Eseguire da command line il seguente comando:
+
+```bash
+curl -X GET "https://graph.facebook.com/v19.0/me?fields=id,name&access_token=YOUR_ACCESS_TOKEN"
+```
+
+L'ID ottenuto è il valore da usare come `INSTAGRAM_USER_ID`.
+
 
 ## 5) Inserire i valori come secret nel repository GitHub
 
