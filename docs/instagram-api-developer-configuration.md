@@ -26,6 +26,8 @@ Dopo aver creato l'app:
 
 In pratica, il caso d'uso definisce quale funzionalità dell'API Instagram vuoi abilitare e quali permessi e accessi sono richiesti per usarla correttamente.
 
+![Associazione dei ruoli dell'app Instagram](./assets/instagram-role-association.svg)
+
 ## 3) Ottieni l'ID dell'account Instagram
 
 L'ID dell'account Instagram è necessario per identificare il profilo con cui vuoi interagire.
