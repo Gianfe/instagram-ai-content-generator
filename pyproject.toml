@@ -1,22 +1,27 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "instagram-ai-content-generator"
+name = "instagram-content-creator"
 version = "0.1.0"
-description = "Minimal Python client for publishing a test Instagram post via the Graph API"
+description = "Publish content to Instagram via the Graph API (posts, and extensible for stories/carousels)."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
-  "requests>=2.32.0",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
 ]
 
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-
-[tool.setuptools]
-package-dir = {"" = "src"}
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+    "responses>=0.25",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

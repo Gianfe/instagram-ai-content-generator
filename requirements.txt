@@ -1,2 +1,7 @@
-requests>=2.32.0
-pytest>=8.0.0
+requests>=2.31
+python-dotenv>=1.0
+
+# dev / test dependencies
+pytest>=8.0
+pytest-mock>=3.12
+responses>=0.25
