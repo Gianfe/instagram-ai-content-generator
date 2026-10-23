@@ -74,6 +74,17 @@ media_id = publish_content(ImagePost(
 ))
 ```
 
+Per aggiungere un tag di luogo, passa a `location_id` l'ID del luogo
+Facebook Places:
+
+```python
+media_id = publish_content(ImagePost(
+    image_url="https://example.com/immagine.jpg",
+    caption="Ciao da Roma!",
+    location_id="ID_DEL_LUOGO_FACEBOOK",
+))
+```
+
 Da riga di comando:
 
 ```powershell

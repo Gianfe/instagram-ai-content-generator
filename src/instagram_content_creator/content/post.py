@@ -20,8 +20,14 @@ class ImagePost(ContentItem):
 
     image_url: str
     caption: str = DEFAULT_CAPTION
+    location_id: str | None = None
 
     def container_params(self) -> dict[str, Any]:
         if not self.image_url:
             raise ValueError("image_url is required to create an image post")
-        return {"image_url": self.image_url, "caption": self.caption}
+        params = {"image_url": self.image_url, "caption": self.caption}
+        if self.location_id is not None:
+            if not self.location_id:
+                raise ValueError("location_id cannot be empty")
+            params["location_id"] = self.location_id
+        return params

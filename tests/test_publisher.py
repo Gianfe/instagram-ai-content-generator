@@ -69,6 +69,26 @@ def test_publish_creates_container_waits_then_publishes(ig_user_id: str) -> None
     assert fake_client.calls[2] == ("POST", f"{ig_user_id}/media_publish", {"creation_id": "container-1"})
 
 
+def test_publish_includes_location_id_in_media_container(ig_user_id: str) -> None:
+    fake_client = FakeGraphAPIClient(
+        [
+            {"id": "container-1"},
+            {"status_code": "FINISHED"},
+            {"id": "media-1"},
+        ]
+    )
+    publisher = make_publisher(fake_client, ig_user_id)
+    post = ImagePost(image_url="https://example.com/img.jpg", location_id="place-123")
+
+    publisher.publish(post)
+
+    assert fake_client.calls[0][2] == {
+        "image_url": "https://example.com/img.jpg",
+        "caption": "Hello World!",
+        "location_id": "place-123",
+    }
+
+
 def test_publish_polls_until_finished(ig_user_id: str) -> None:
     fake_client = FakeGraphAPIClient(
         [

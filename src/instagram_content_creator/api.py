@@ -24,3 +24,14 @@ def post_hello_world(image_url: str, caption: str = DEFAULT_CAPTION) -> str:
     post, so ``image_url`` must point to an image accessible over HTTPS.
     """
     return publish_content(ImagePost(image_url=image_url, caption=caption))
+
+
+def post_with_location(
+    image_url: str,
+    location_id: str,
+    caption: str = DEFAULT_CAPTION,
+) -> str:
+    """Publish an image post tagged with a Facebook Places location ID."""
+    return publish_content(
+        ImagePost(image_url=image_url, caption=caption, location_id=location_id)
+    )
