@@ -5,6 +5,7 @@ from __future__ import annotations
 from .client import GraphAPIClient
 from .config import InstagramConfig
 from .content.base import ContentItem
+from .content.carousel import CarouselPost
 from .content.post import DEFAULT_CAPTION, ImagePost
 from .publisher import ContentPublisher
 
@@ -26,12 +27,9 @@ def post_hello_world(image_url: str, caption: str = DEFAULT_CAPTION) -> str:
     return publish_content(ImagePost(image_url=image_url, caption=caption))
 
 
-def post_with_location(
-    image_url: str,
-    location_id: str,
+def post_carousel(
+    image_urls: list[str],
     caption: str = DEFAULT_CAPTION,
 ) -> str:
-    """Publish an image post tagged with a Facebook Places location ID."""
-    return publish_content(
-        ImagePost(image_url=image_url, caption=caption, location_id=location_id)
-    )
+    """Publish a carousel of 2 to 10 images and return its media id."""
+    return publish_content(CarouselPost(image_urls=image_urls, caption=caption))

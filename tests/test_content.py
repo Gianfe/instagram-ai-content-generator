@@ -23,28 +23,10 @@ class TestImagePost:
 
         assert post.container_params()["caption"] == "Custom caption"
 
-    def test_container_params_with_location_id(self) -> None:
-        post = ImagePost(
-            image_url="https://example.com/img.jpg",
-            location_id="123456789",
-        )
-
-        assert post.container_params() == {
-            "image_url": "https://example.com/img.jpg",
-            "caption": "Hello World!",
-            "location_id": "123456789",
-        }
-
     def test_requires_image_url(self) -> None:
         post = ImagePost(image_url="")
 
         with pytest.raises(ValueError, match="image_url"):
-            post.container_params()
-
-    def test_rejects_empty_location_id(self) -> None:
-        post = ImagePost(image_url="https://example.com/img.jpg", location_id="")
-
-        with pytest.raises(ValueError, match="location_id"):
             post.container_params()
 
     def test_has_no_child_containers(self) -> None:

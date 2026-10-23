@@ -74,17 +74,6 @@ media_id = publish_content(ImagePost(
 ))
 ```
 
-Per aggiungere un tag di luogo, passa a `location_id` l'ID del luogo
-Facebook Places:
-
-```python
-media_id = publish_content(ImagePost(
-    image_url="https://example.com/immagine.jpg",
-    caption="Ciao da Roma!",
-    location_id="ID_DEL_LUOGO_FACEBOOK",
-))
-```
-
 Da riga di comando:
 
 ```powershell
@@ -111,17 +100,16 @@ print(f"Storia pubblicata! Media id: {media_id}")
 ### Carosello (2-10 immagini)
 
 ```python
-from instagram_content_creator.api import publish_content
-from instagram_content_creator.content import CarouselPost
+from instagram_content_creator import post_carousel
 
-media_id = publish_content(CarouselPost(
+media_id = post_carousel(
     image_urls=[
         "https://example.com/1.jpg",
         "https://example.com/2.jpg",
         "https://example.com/3.jpg",
     ],
     caption="Il mio carosello",
-))
+)
 print(f"Carosello pubblicato! Media id: {media_id}")
 ```
 

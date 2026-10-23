@@ -12,13 +12,13 @@ Planned extensions (see ``instagram_content_creator.content``):
     - Reels / video posts
 """
 
-from .api import post_hello_world, post_with_location, publish_content
+from .api import post_carousel, post_hello_world, publish_content
 from .config import InstagramConfig
 from .exceptions import InstagramAPIError
 
 __all__ = [
     "post_hello_world",
-    "post_with_location",
+    "post_carousel",
     "publish_content",
     "InstagramConfig",
     "InstagramAPIError",
