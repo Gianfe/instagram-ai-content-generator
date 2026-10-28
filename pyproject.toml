@@ -11,6 +11,7 @@ requires-python = ">=3.9"
 dependencies = [
     "requests>=2.31",
     "python-dotenv>=1.0",
+    "cloudinary>=1.36",
 ]
 
 [project.optional-dependencies]

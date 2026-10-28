@@ -7,6 +7,7 @@ Attualmente supporta:
 - **Post immagine** (feed) — incluso un post rapido "Hello World!"
 - **Storie** (immagine singola)
 - **Caroselli** (2-10 immagini)
+- **Upload su Cloudinary** con link di download pubblico per Instagram
 
 L'architettura è pensata per aggiungere facilmente nuovi tipi di contenuto
 (es. Reels/video) senza toccare il client HTTP o il flusso di pubblicazione.
@@ -19,6 +20,8 @@ L'architettura è pensata per aggiungere facilmente nuovi tipi di contenuto
   - `INSTAGRAM_APP_ID`
   - `INSTAGRAM_USER_ID`
   - `INSTAGRAM_ACCESS_TOKEN`
+- Per caricare file su Cloudinary, configura anche `CLOUDINARY_URL` (oppure
+  `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` e `CLOUDINARY_API_SECRET`).
 
 > Nota: la Graph API non permette post di solo testo. Ogni post/storia
 > richiede un'immagine (o video) pubblicamente raggiungibile via HTTPS.
@@ -136,6 +139,32 @@ media_id = publish_content(
 )
 ```
 
+### Caricare un'immagine su Cloudinary
+
+Configura `CLOUDINARY_URL` (il valore mostrato nella dashboard di Cloudinary)
+oppure le tre variabili separate `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`
+e `CLOUDINARY_API_SECRET`. Puoi anche leggere la [guida di configurazione di
+Cloudinary](./docs/cloudinary-configuration.md).
+
+```python
+from instagram_content_creator import upload_to_cloudinary
+from instagram_content_creator.api import post_hello_world
+
+uploaded = upload_to_cloudinary("immagine.jpg")
+print(f"Link pubblico: {uploaded.download_url}")
+
+# Il link restituito può essere passato all'API di pubblicazione Instagram.
+media_id = post_hello_world(
+    image_url=uploaded.download_url,
+    caption="Immagine caricata su Cloudinary",
+)
+```
+
+Il link restituito (`secure_url`) è pubblico: chiunque lo ottenga può
+visualizzare il file. Instagram deve poter raggiungere l'URL via HTTPS e il
+contenuto deve essere in un formato supportato; verifica il link in una
+finestra anonima prima della pubblicazione.
+
 ### Estendere con un nuovo tipo di contenuto
 
 1. Crea una classe in `src/instagram_content_creator/content/` che estenda
@@ -151,6 +180,7 @@ src/instagram_content_creator/
   api.py            # funzioni di alto livello (post_hello_world, publish_content)
   client.py         # wrapper HTTP per la Graph API
   config.py         # caricamento delle variabili d'ambiente
+  cloudinary_storage.py  # upload su Cloudinary e creazione di link pubblici
   exceptions.py      # InstagramAPIError
   publisher.py      # logica di creazione container + pubblicazione
   content/
@@ -189,8 +219,7 @@ python -m pip install --upgrade pip
 3. Installa le dipendenze del progetto:
 
 ```bash
-python -m pip install -r requirements.txt
-python -m pip install -e .
+python -m pip install -e ".[dev]"
 ```
 
 4. Imposta le variabili d'ambiente richieste dall'API di Instagram:

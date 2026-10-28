@@ -2,12 +2,27 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from .client import GraphAPIClient
+from .cloudinary_storage import (
+    CloudinaryConfig,
+    CloudinaryUpload,
+    upload_to_cloudinary as _upload_to_cloudinary,
+)
 from .config import InstagramConfig
 from .content.base import ContentItem
 from .content.carousel import CarouselPost
 from .content.post import DEFAULT_CAPTION, ImagePost
 from .publisher import ContentPublisher
+
+
+def upload_to_cloudinary(
+    file_path: str | Path,
+    config: CloudinaryConfig | None = None,
+) -> CloudinaryUpload:
+    """Upload a file to Cloudinary and return its public delivery link."""
+    return _upload_to_cloudinary(file_path, config=config)
 
 
 def publish_content(content: ContentItem, config: InstagramConfig | None = None) -> str:

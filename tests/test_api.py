@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
 import responses
 
 from instagram_content_creator.api import (
     post_carousel,
     post_hello_world,
     publish_content,
+    upload_to_cloudinary,
+)
+from instagram_content_creator.cloudinary_storage import (
+    CloudinaryConfig,
+    CloudinaryUpload,
 )
 from instagram_content_creator.config import InstagramConfig
 from instagram_content_creator.content.post import ImagePost
@@ -84,3 +92,31 @@ def test_publish_content_with_explicit_config(config: InstagramConfig) -> None:
     assert "caption=Hello+World%21" in create_request.body
     publish_request = responses.calls[2].request
     assert "creation_id=container-1" in publish_request.body
+
+
+def test_upload_to_cloudinary_delegates_to_cloudinary_uploader(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    config = CloudinaryConfig("demo-cloud", "demo-key", "demo-secret")
+    expected = CloudinaryUpload(
+        public_id="instagram/image",
+        file_name="image.jpg",
+        download_url="https://res.cloudinary.com/demo-cloud/image/upload/v1/image.jpg",
+    )
+    received: dict[str, object] = {}
+
+    def fake_upload(
+        file_path: str | Path, config: CloudinaryConfig | None = None
+    ) -> CloudinaryUpload:
+        received["file_path"] = file_path
+        received["config"] = config
+        return expected
+
+    monkeypatch.setattr(
+        "instagram_content_creator.api._upload_to_cloudinary", fake_upload
+    )
+
+    result = upload_to_cloudinary("image.jpg", config=config)
+
+    assert result == expected
+    assert received == {"file_path": "image.jpg", "config": config}

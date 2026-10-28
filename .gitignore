@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .env
+instagram-ai-storage-84ee389ef1ef.json
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
