@@ -13,13 +13,16 @@ jobs:
   post-current-time:
     runs-on: ubuntu-latest
     steps:
-      - name: Check it is actually 11:30 in Europe/Rome
+      - name: Check it is actually around 11:30 in Europe/Rome
         id: time-check
         if: github.event_name == 'schedule'
         run: |
-          current_time=$(TZ=Europe/Rome date +%H:%M)
-          echo "Current Europe/Rome time: $current_time"
-          if [ "$current_time" != "11:30" ]; then
+          current_minutes=$(TZ=Europe/Rome date +%H:%M | awk -F: '{print $1 * 60 + $2}')
+          target_minutes=$((11 * 60 + 30))
+          tolerance_minutes=10
+          diff=$(( current_minutes > target_minutes ? current_minutes - target_minutes : target_minutes - current_minutes ))
+          echo "Current Europe/Rome time offset from 11:30: $diff minute(s)"
+          if [ "$diff" -gt "$tolerance_minutes" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
