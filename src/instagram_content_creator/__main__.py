@@ -3,14 +3,18 @@
 from __future__ import annotations
 
 import argparse
-import sys
+import logging
 
 from .api import post_hello_world
 from .content.post import DEFAULT_CAPTION
 from .exceptions import InstagramAPIError
 
+logger = logging.getLogger(__name__)
+
 
 def main(argv: list[str] | None = None) -> int:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
     parser = argparse.ArgumentParser(description="Publish a Hello World post to Instagram.")
     parser.add_argument("--image-url", required=True, help="Publicly reachable HTTPS image URL")
     parser.add_argument("--caption", default=DEFAULT_CAPTION, help="Post caption")
@@ -19,10 +23,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         media_id = post_hello_world(image_url=args.image_url, caption=args.caption)
     except (OSError, InstagramAPIError) as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        logger.error("Error: %s", exc)
         return 1
 
-    print(f"Published media id: {media_id}")
+    logger.info("Published media id: %s", media_id)
     return 0
 
 

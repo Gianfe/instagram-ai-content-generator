@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -53,4 +56,5 @@ def generate_text_image(
 
     draw.multiline_text(position, text, fill=options.text_color, font=font, align="center")
     image.save(path, "PNG")
+    logger.info("Generated text image at %s (size=%s)", path, options.size)
     return path

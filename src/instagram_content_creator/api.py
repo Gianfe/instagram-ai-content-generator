@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from .client import GraphAPIClient
@@ -15,6 +16,8 @@ from .content.base import ContentItem
 from .content.carousel import CarouselPost
 from .content.post import DEFAULT_CAPTION, ImagePost
 from .publisher import ContentPublisher
+
+logger = logging.getLogger(__name__)
 
 
 def upload_to_cloudinary(
@@ -31,7 +34,11 @@ def publish_content(content: ContentItem, config: InstagramConfig | None = None)
     config = config or InstagramConfig.from_env()
     client = GraphAPIClient(config)
     publisher = ContentPublisher(client, config.user_id)
-    return publisher.publish(content)
+    try:
+        return publisher.publish(content)
+    except Exception:
+        logger.exception("Failed to publish %s content", type(content).__name__)
+        raise
 
 
 def post_hello_world(image_url: str, caption: str = DEFAULT_CAPTION) -> str:

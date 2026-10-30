@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import uuid
 from dataclasses import dataclass
@@ -17,6 +18,8 @@ from dotenv import load_dotenv
 UploadFn = Callable[..., dict[str, Any]]
 GenerateFn = Callable[..., dict[str, Any]]
 AssignFolderFn = Callable[..., dict[str, Any]]
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,7 @@ class CloudinaryConfig:
                 raise OSError(
                     "CLOUDINARY_URL must match cloudinary://<api_key>:<api_secret>@<cloud_name>"
                 )
+            logger.debug("Loaded Cloudinary config from CLOUDINARY_URL (cloud_name=%s)", parsed.hostname)
             return cls(
                 cloud_name=parsed.hostname,
                 api_key=parsed.username,
@@ -73,6 +77,7 @@ class CloudinaryConfig:
                 "Missing required environment variable(s): " + ", ".join(missing)
             )
 
+        logger.debug("Loaded Cloudinary config from environment variables (cloud_name=%s)", cloud_name)
         return cls(
             cloud_name=cloud_name,  # type: ignore[arg-type]
             api_key=api_key,  # type: ignore[arg-type]
@@ -114,6 +119,7 @@ class CloudinaryUploader:
             raise FileNotFoundError(f"File to upload not found: {path}")
 
         effective_folder = folder if folder is not None else self.config.folder
+        logger.info("Uploading %s to Cloudinary (folder=%s)", path, effective_folder)
         result = self._upload_fn(
             str(path),
             resource_type="auto",
@@ -131,6 +137,7 @@ class CloudinaryUploader:
         if not download_url or not download_url.startswith("https://"):
             raise RuntimeError("Cloudinary returned a non-HTTPS download link")
 
+        logger.info("Uploaded to Cloudinary: public_id=%s", public_id)
         return CloudinaryUpload(
             public_id=public_id,
             file_name=path.name,
@@ -222,6 +229,7 @@ class CloudinaryImageGenerator:
             raise ValueError("prompt must not be empty")
 
         effective_folder = folder if folder is not None else self.config.folder
+        logger.info("Generating Cloudinary image from prompt (folder=%s)", effective_folder)
         result = self._generate_fn(prompt, self._resolve_public_id(public_id, effective_folder))
 
         assets = result.get("data", {}).get("assets") or []
@@ -239,6 +247,7 @@ class CloudinaryImageGenerator:
         if effective_folder:
             self._assign_folder_fn(generated_public_id, effective_folder.strip("/"))
 
+        logger.info("Generated Cloudinary image: public_id=%s", generated_public_id)
         return CloudinaryGeneratedImage(public_id=generated_public_id, download_url=download_url)
 
 
