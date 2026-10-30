@@ -1,0 +1,48 @@
+name: Post current time to Instagram
+
+on:
+  # Cron is UTC-only; Rome is UTC+1 (CET) in winter and UTC+2 (CEST) in summer, so
+  # both offsets are scheduled and the actual-time check step below skips the one
+  # that doesn't correspond to 11:30 Europe/Rome on that date.
+  schedule:
+    - cron: "30 9 * * 6"  # 11:30 Europe/Rome during CEST (summer)
+    - cron: "30 10 * * 6" # 11:30 Europe/Rome during CET (winter)
+  workflow_dispatch: {}
+
+jobs:
+  post-current-time:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check it is actually 11:30 in Europe/Rome
+        id: time-check
+        if: github.event_name == 'schedule'
+        run: |
+          current_time=$(TZ=Europe/Rome date +%H:%M)
+          echo "Current Europe/Rome time: $current_time"
+          if [ "$current_time" != "11:30" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.time-check.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.time-check.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.time-check.outputs.skip != 'true'
+        run: python -m pip install --upgrade pip && pip install -e .
+
+      - name: Publish current time to Instagram
+        if: steps.time-check.outputs.skip != 'true'
+        env:
+          INSTAGRAM_APP_ID: ${{ secrets.INSTAGRAM_APP_ID }}
+          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
+          CLOUDINARY_FOLDER: ${{ secrets.CLOUDINARY_FOLDER }}
+        run: python src/post_current_time.py
