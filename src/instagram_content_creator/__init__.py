@@ -21,6 +21,7 @@ from .api import (
 from .cloudinary_storage import CloudinaryConfig, CloudinaryUpload
 from .config import InstagramConfig
 from .exceptions import InstagramAPIError
+from .text_image import TextImageOptions, generate_text_image
 
 __all__ = [
     "post_hello_world",
@@ -31,6 +32,8 @@ __all__ = [
     "CloudinaryUpload",
     "InstagramConfig",
     "InstagramAPIError",
+    "TextImageOptions",
+    "generate_text_image",
 ]
 
 __version__ = "0.1.0"

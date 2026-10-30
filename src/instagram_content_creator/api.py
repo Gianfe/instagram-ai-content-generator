@@ -19,10 +19,11 @@ from .publisher import ContentPublisher
 
 def upload_to_cloudinary(
     file_path: str | Path,
+    folder: str | None = None,
     config: CloudinaryConfig | None = None,
 ) -> CloudinaryUpload:
     """Upload a file to Cloudinary and return its public delivery link."""
-    return _upload_to_cloudinary(file_path, config=config)
+    return _upload_to_cloudinary(file_path, folder=folder, config=config)
 
 
 def publish_content(content: ContentItem, config: InstagramConfig | None = None) -> str:

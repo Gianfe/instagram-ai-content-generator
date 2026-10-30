@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 UploadFn = Callable[..., dict[str, Any]]
 GenerateFn = Callable[..., dict[str, Any]]
+AssignFolderFn = Callable[..., dict[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -106,16 +107,17 @@ class CloudinaryUploader:
         )
         return cloudinary.uploader.upload
 
-    def upload_file(self, file_path: str | Path) -> CloudinaryUpload:
+    def upload_file(self, file_path: str | Path, folder: str | None = None) -> CloudinaryUpload:
         """Upload a file to Cloudinary and return its public HTTPS delivery URL."""
         path = Path(file_path)
         if not path.is_file():
             raise FileNotFoundError(f"File to upload not found: {path}")
 
+        effective_folder = folder if folder is not None else self.config.folder
         result = self._upload_fn(
             str(path),
             resource_type="auto",
-            folder=self.config.folder,
+            folder=effective_folder,
             use_filename=True,
             unique_filename=True,
             overwrite=False,
@@ -138,11 +140,12 @@ class CloudinaryUploader:
 
 def upload_to_cloudinary(
     file_path: str | Path,
+    folder: str | None = None,
     config: CloudinaryConfig | None = None,
 ) -> CloudinaryUpload:
     """Upload a file using an explicit config or Cloudinary environment settings."""
     cloudinary_config = config or CloudinaryConfig.from_env()
-    return CloudinaryUploader(cloudinary_config).upload_file(file_path)
+    return CloudinaryUploader(cloudinary_config).upload_file(file_path, folder=folder)
 
 
 @dataclass(frozen=True)
@@ -156,9 +159,17 @@ class CloudinaryGeneratedImage:
 class CloudinaryImageGenerator:
     """Generate images with Cloudinary's AI Image Generation add-on."""
 
-    def __init__(self, config: CloudinaryConfig, generate_fn: GenerateFn | None = None) -> None:
+    def __init__(
+        self,
+        config: CloudinaryConfig,
+        generate_fn: GenerateFn | None = None,
+        assign_folder_fn: AssignFolderFn | None = None,
+    ) -> None:
         self.config = config
         self._generate_fn = generate_fn if generate_fn is not None else self._configured_generate_fn(config)
+        self._assign_folder_fn = (
+            assign_folder_fn if assign_folder_fn is not None else self._configured_assign_folder_fn(config)
+        )
 
     @staticmethod
     def _configured_generate_fn(config: CloudinaryConfig) -> GenerateFn:
@@ -178,9 +189,23 @@ class CloudinaryImageGenerator:
 
         return _generate
 
-    def _resolve_public_id(self, public_id: str | None, folder: str | None) -> str | None:
-        """Prefix public_id with the given (or configured) folder, generating a name if needed."""
-        effective_folder = folder if folder is not None else self.config.folder
+    @staticmethod
+    def _configured_assign_folder_fn(config: CloudinaryConfig) -> AssignFolderFn:
+        def _assign_folder(public_id: str, folder: str) -> dict[str, Any]:
+            # the generate API has no asset_folder param, so dynamic folder mode needs this follow-up call
+            response = requests.post(
+                f"https://api.cloudinary.com/v1_1/{config.cloud_name}/resources/image/upload/{public_id}",
+                auth=(config.api_key, config.api_secret),
+                data={"asset_folder": folder},
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.json()
+
+        return _assign_folder
+
+    def _resolve_public_id(self, public_id: str | None, effective_folder: str | None) -> str | None:
+        """Prefix public_id with the effective folder, generating a name if needed."""
         if not effective_folder:
             return public_id
         name = public_id or uuid.uuid4().hex
@@ -196,7 +221,8 @@ class CloudinaryImageGenerator:
         if not prompt.strip():
             raise ValueError("prompt must not be empty")
 
-        result = self._generate_fn(prompt, self._resolve_public_id(public_id, folder))
+        effective_folder = folder if folder is not None else self.config.folder
+        result = self._generate_fn(prompt, self._resolve_public_id(public_id, effective_folder))
 
         assets = result.get("data", {}).get("assets") or []
         if not assets:
@@ -209,6 +235,9 @@ class CloudinaryImageGenerator:
             raise RuntimeError("Cloudinary image generation response is missing asset details")
         if not download_url.startswith("https://"):
             raise RuntimeError("Cloudinary returned a non-HTTPS download link")
+
+        if effective_folder:
+            self._assign_folder_fn(generated_public_id, effective_folder.strip("/"))
 
         return CloudinaryGeneratedImage(public_id=generated_public_id, download_url=download_url)
 

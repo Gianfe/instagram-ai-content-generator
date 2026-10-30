@@ -106,9 +106,12 @@ def test_upload_to_cloudinary_delegates_to_cloudinary_uploader(
     received: dict[str, object] = {}
 
     def fake_upload(
-        file_path: str | Path, config: CloudinaryConfig | None = None
+        file_path: str | Path,
+        folder: str | None = None,
+        config: CloudinaryConfig | None = None,
     ) -> CloudinaryUpload:
         received["file_path"] = file_path
+        received["folder"] = folder
         received["config"] = config
         return expected
 
@@ -116,7 +119,7 @@ def test_upload_to_cloudinary_delegates_to_cloudinary_uploader(
         "instagram_content_creator.api._upload_to_cloudinary", fake_upload
     )
 
-    result = upload_to_cloudinary("image.jpg", config=config)
+    result = upload_to_cloudinary("image.jpg", folder="instagram", config=config)
 
     assert result == expected
-    assert received == {"file_path": "image.jpg", "config": config}
+    assert received == {"file_path": "image.jpg", "folder": "instagram", "config": config}

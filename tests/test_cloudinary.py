@@ -63,6 +63,24 @@ def test_upload_returns_secure_download_link(
     assert upload_fn.kwargs["resource_type"] == "auto"
 
 
+def test_upload_folder_argument_overrides_configured_folder(
+    tmp_path: Path, cloudinary_config: CloudinaryConfig
+) -> None:
+    file_path = tmp_path / "photo.jpg"
+    file_path.write_bytes(b"image-data")
+    upload_fn = _FakeUploadFn(
+        {
+            "public_id": "other/photo",
+            "secure_url": "https://res.cloudinary.com/demo-cloud/image/upload/v1/other/photo.jpg",
+        }
+    )
+
+    CloudinaryUploader(cloudinary_config, upload_fn=upload_fn).upload_file(file_path, folder="other")
+
+    assert upload_fn.kwargs is not None
+    assert upload_fn.kwargs["folder"] == "other"
+
+
 def test_upload_rejects_missing_local_file(cloudinary_config: CloudinaryConfig) -> None:
     upload_fn = _FakeUploadFn({})
     with pytest.raises(FileNotFoundError, match="File to upload not found"):
@@ -161,8 +179,11 @@ def test_public_api_uses_environment_config(
         def __init__(self, received_config: CloudinaryConfig) -> None:
             assert received_config == config
 
-        def upload_file(self, received_path: str | Path) -> CloudinaryUpload:
+        def upload_file(
+            self, received_path: str | Path, folder: str | None = None
+        ) -> CloudinaryUpload:
             assert received_path == file_path
+            assert folder is None
             return CloudinaryUpload("instagram/photo", "photo.jpg", "https://example.com/photo")
 
     monkeypatch.setattr(
@@ -188,6 +209,15 @@ class _FakeGenerateFn:
         return self.result
 
 
+class _FakeAssignFolderFn:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, str]] = []
+
+    def __call__(self, public_id: str, folder: str) -> dict[str, Any]:
+        self.calls.append((public_id, folder))
+        return {}
+
+
 def test_generate_image_returns_generated_asset(cloudinary_config: CloudinaryConfig) -> None:
     generate_fn = _FakeGenerateFn(
         {
@@ -204,9 +234,9 @@ def test_generate_image_returns_generated_asset(cloudinary_config: CloudinaryCon
         }
     )
 
-    result = CloudinaryImageGenerator(cloudinary_config, generate_fn=generate_fn).generate_image(
-        "a cat wearing a cowboy hat", public_id="generated"
-    )
+    result = CloudinaryImageGenerator(
+        cloudinary_config, generate_fn=generate_fn, assign_folder_fn=_FakeAssignFolderFn()
+    ).generate_image("a cat wearing a cowboy hat", public_id="generated")
 
     assert result == CloudinaryGeneratedImage(
         public_id="instagram/generated",
@@ -225,7 +255,9 @@ def test_generate_image_places_asset_in_configured_folder_without_explicit_name(
         {"data": {"assets": [{"storage": {"public_id": "instagram/x", "secure_url": "https://example.com/x.png"}}]}}
     )
 
-    CloudinaryImageGenerator(cloudinary_config, generate_fn=generate_fn).generate_image("a cat")
+    CloudinaryImageGenerator(
+        cloudinary_config, generate_fn=generate_fn, assign_folder_fn=_FakeAssignFolderFn()
+    ).generate_image("a cat")
 
     assert generate_fn.kwargs is not None
     resolved_public_id = generate_fn.kwargs["public_id"]
@@ -240,11 +272,26 @@ def test_generate_image_folder_argument_overrides_configured_folder(
         {"data": {"assets": [{"storage": {"public_id": "other/cat", "secure_url": "https://example.com/cat.png"}}]}}
     )
 
-    CloudinaryImageGenerator(cloudinary_config, generate_fn=generate_fn).generate_image(
-        "a cat", public_id="cat", folder="other"
-    )
+    CloudinaryImageGenerator(
+        cloudinary_config, generate_fn=generate_fn, assign_folder_fn=_FakeAssignFolderFn()
+    ).generate_image("a cat", public_id="cat", folder="other")
 
     assert generate_fn.kwargs == {"prompt": "a cat", "public_id": "other/cat"}
+
+
+def test_generate_image_assigns_asset_folder_when_folder_is_set(
+    cloudinary_config: CloudinaryConfig,
+) -> None:
+    generate_fn = _FakeGenerateFn(
+        {"data": {"assets": [{"storage": {"public_id": "instagram/cat", "secure_url": "https://example.com/cat.png"}}]}}
+    )
+    assign_folder_fn = _FakeAssignFolderFn()
+
+    CloudinaryImageGenerator(
+        cloudinary_config, generate_fn=generate_fn, assign_folder_fn=assign_folder_fn
+    ).generate_image("a cat", public_id="cat")
+
+    assert assign_folder_fn.calls == [("instagram/cat", "instagram")]
 
 
 def test_generate_image_without_folder_leaves_public_id_untouched() -> None:
