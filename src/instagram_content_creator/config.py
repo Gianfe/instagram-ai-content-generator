@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass
 
@@ -20,6 +21,8 @@ _REQUIRED_ENV_VARS = (
     "INSTAGRAM_USER_ID",
     "INSTAGRAM_ACCESS_TOKEN",
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _default_host_for_token(access_token: str) -> str:
@@ -52,10 +55,12 @@ class InstagramConfig:
                 "Missing required environment variable(s): " + ", ".join(missing)
             )
 
-        return cls(
+        config = cls(
             app_id=values["INSTAGRAM_APP_ID"],  # type: ignore[arg-type]
             user_id=values["INSTAGRAM_USER_ID"],  # type: ignore[arg-type]
             access_token=values["INSTAGRAM_ACCESS_TOKEN"],  # type: ignore[arg-type]
             api_version=api_version,
             host=os.getenv("INSTAGRAM_API_HOST", ""),
         )
+        logger.debug("Loaded Instagram config (host=%s, api_version=%s)", config.host, config.api_version)
+        return config

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Callable
 
@@ -15,6 +16,8 @@ PUBLISH_PATH_TEMPLATE = "{ig_user_id}/media_publish"
 FAILED_STATUSES = {"ERROR", "EXPIRED"}
 DEFAULT_POLL_INTERVAL_SECONDS = 1.0
 DEFAULT_MAX_POLL_ATTEMPTS = 30
+
+logger = logging.getLogger(__name__)
 
 
 class ContentPublisher:
@@ -37,10 +40,14 @@ class ContentPublisher:
 
     def publish(self, content: ContentItem) -> str:
         """Create the container(s) for ``content``, wait for processing, then publish it."""
+        logger.info("Publishing %s content", type(content).__name__)
         children_ids = self._create_child_containers(content)
         container_id = self._create_container(content, children_ids)
+        logger.info("Media container created: %s", container_id)
         self._wait_until_ready(container_id)
-        return self._publish_container(container_id)
+        media_id = self._publish_container(container_id)
+        logger.info("Media published: %s", media_id)
+        return media_id
 
     def _create_child_containers(self, content: ContentItem) -> list[str]:
         children_ids = []
@@ -70,16 +77,22 @@ class ContentPublisher:
         Publishing right after creation can race with Meta's media processing,
         causing media_publish to fail with "Media ID is not available".
         """
-        for _ in range(self.max_poll_attempts):
+        for attempt in range(self.max_poll_attempts):
             response = self.client.get(container_id, params={"fields": "status_code"})
             status = response.get("status_code")
+            logger.debug(
+                "Container %s status=%s (attempt %s/%s)",
+                container_id, status, attempt + 1, self.max_poll_attempts,
+            )
             if status in (None, "FINISHED"):
                 return
             if status in FAILED_STATUSES:
+                logger.error("Container %s failed to process (status=%s)", container_id, status)
                 raise InstagramAPIError(
                     f"Media container failed to process (status: {status})", response=response
                 )
             self.sleep_fn(self.poll_interval_seconds)
+        logger.error("Timed out waiting for container %s to finish processing", container_id)
         raise InstagramAPIError("Timed out waiting for media container to finish processing")
 
     def _publish_container(self, container_id: str) -> str:

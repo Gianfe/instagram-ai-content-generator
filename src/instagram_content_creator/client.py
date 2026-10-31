@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Optional
 
 import requests
@@ -10,6 +11,8 @@ from .config import InstagramConfig
 from .exceptions import InstagramAPIError
 
 REQUEST_TIMEOUT_SECONDS = 30
+
+logger = logging.getLogger(__name__)
 
 
 class GraphAPIClient:
@@ -35,6 +38,8 @@ class GraphAPIClient:
         request_params["access_token"] = self.config.access_token
         url = f"{self.base_url}/{path.lstrip('/')}"
 
+        # never log request_params: it carries the access_token
+        logger.debug("Graph API request: %s %s", method, url)
         if method == "GET":
             response = self.session.get(url, params=request_params, timeout=REQUEST_TIMEOUT_SECONDS)
         else:
@@ -54,6 +59,8 @@ class GraphAPIClient:
             message = error.get(
                 "message", f"Graph API request failed with status {response.status_code}"
             )
+            logger.error("Graph API request failed (status=%s): %s", response.status_code, message)
             raise InstagramAPIError(message, response=data)
 
+        logger.debug("Graph API request succeeded (status=%s)", response.status_code)
         return data
