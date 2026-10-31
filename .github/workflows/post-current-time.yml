@@ -7,7 +7,12 @@ on:
   schedule:
     - cron: "30 9 * * 6"  # 11:30 Europe/Rome during CEST (summer)
     - cron: "30 10 * * 6" # 11:30 Europe/Rome during CET (winter)
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch da cui pubblicare"
+        required: false
+        default: "develop"
 
 jobs:
   post-current-time:
@@ -29,6 +34,8 @@ jobs:
       - name: Checkout repository
         if: steps.time-check.outputs.skip != 'true'
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'develop' }}
 
       - name: Set up Python
         if: steps.time-check.outputs.skip != 'true'
